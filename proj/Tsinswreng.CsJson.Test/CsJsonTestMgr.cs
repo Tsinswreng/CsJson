@@ -1,4 +1,5 @@
 using Tsinswreng.CsJson.Test.Domains.Json;
+using Tsinswreng.CsJson.Test.Domains.JsonNodeDictTests;
 using Tsinswreng.CsTreeTest;
 
 namespace Tsinswreng.CsJson.Test;
@@ -10,6 +11,7 @@ public class CsJsonTestMgr:DiEtTestMgr{
 	public override ITestNode RegisterTestsInto(ITestNode? Node){
 		Node = this.TestNode;
 		this.RegisterTester<TestDfltJsonSerializer>();
+		this.RegisterTester<TestJsonNodeDict>();
 		return Node;
 	}
 }
