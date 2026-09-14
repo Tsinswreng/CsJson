@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Tsinswreng.CsCore;
 
 
 /// 完整 JSON 序列化接口：與官方 System.Text.Json.JsonSerializer 的公開 API 面逐一對應，

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Tsinswreng.CsCore;
 
 /// IJsonSerializer 的默認實現：逐個方法直接轉發到官方 System.Text.Json.JsonSerializer 靜態 API。
 /// 轉發方向與官方一致：
@@ -35,7 +36,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public string Serialize<TValue>(TValue value, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Serialize(value, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Serialize(value, options ?? Options);
 	}
 	public string Serialize<TValue>(TValue value, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Serialize(value, jsonTypeInfo);
@@ -43,7 +44,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public string Serialize(object? value, Type inputType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Serialize(value, inputType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Serialize(value, inputType, options ?? Options);
 	}
 	public string Serialize(object? value, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Serialize(value, jsonTypeInfo);
@@ -57,7 +58,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public void Serialize<TValue>(Utf8JsonWriter writer, TValue value, JsonSerializerOptions? options = null){
-		System.Text.Json.JsonSerializer.Serialize(writer, value, options ?? DfltOptions);
+		System.Text.Json.JsonSerializer.Serialize(writer, value, options ?? Options);
 	}
 	public void Serialize<TValue>(Utf8JsonWriter writer, TValue value, JsonTypeInfo<TValue> jsonTypeInfo){
 		System.Text.Json.JsonSerializer.Serialize(writer, value, jsonTypeInfo);
@@ -65,7 +66,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public void Serialize(Utf8JsonWriter writer, object? value, Type inputType, JsonSerializerOptions? options = null){
-		System.Text.Json.JsonSerializer.Serialize(writer, value, inputType, options ?? DfltOptions);
+		System.Text.Json.JsonSerializer.Serialize(writer, value, inputType, options ?? Options);
 	}
 	public void Serialize(Utf8JsonWriter writer, object? value, JsonTypeInfo jsonTypeInfo){
 		System.Text.Json.JsonSerializer.Serialize(writer, value, jsonTypeInfo);
@@ -79,7 +80,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public void Serialize<TValue>(Stream utf8Json, TValue value, JsonSerializerOptions? options = null){
-		System.Text.Json.JsonSerializer.Serialize(utf8Json, value, options ?? DfltOptions);
+		System.Text.Json.JsonSerializer.Serialize(utf8Json, value, options ?? Options);
 	}
 	public void Serialize<TValue>(Stream utf8Json, TValue value, JsonTypeInfo<TValue> jsonTypeInfo){
 		System.Text.Json.JsonSerializer.Serialize(utf8Json, value, jsonTypeInfo);
@@ -87,7 +88,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public void Serialize(Stream utf8Json, object? value, Type inputType, JsonSerializerOptions? options = null){
-		System.Text.Json.JsonSerializer.Serialize(utf8Json, value, inputType, options ?? DfltOptions);
+		System.Text.Json.JsonSerializer.Serialize(utf8Json, value, inputType, options ?? Options);
 	}
 	public void Serialize(Stream utf8Json, object? value, JsonTypeInfo jsonTypeInfo){
 		System.Text.Json.JsonSerializer.Serialize(utf8Json, value, jsonTypeInfo);
@@ -101,7 +102,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public Task SerializeAsync<TValue>(Stream utf8Json, TValue value, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.SerializeAsync(utf8Json, value, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.SerializeAsync(utf8Json, value, options ?? Options, cancellationToken);
 	}
 	public Task SerializeAsync<TValue>(Stream utf8Json, TValue value, JsonTypeInfo<TValue> jsonTypeInfo, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.SerializeAsync(utf8Json, value, jsonTypeInfo, cancellationToken);
@@ -109,7 +110,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public Task SerializeAsync(Stream utf8Json, object? value, Type inputType, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.SerializeAsync(utf8Json, value, inputType, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.SerializeAsync(utf8Json, value, inputType, options ?? Options, cancellationToken);
 	}
 	public Task SerializeAsync(Stream utf8Json, object? value, JsonTypeInfo jsonTypeInfo, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.SerializeAsync(utf8Json, value, jsonTypeInfo, cancellationToken);
@@ -121,7 +122,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public Task SerializeAsync<TValue>(PipeWriter writer, TValue value, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.SerializeAsync(writer, value, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.SerializeAsync(writer, value, options ?? Options, cancellationToken);
 	}
 	public Task SerializeAsync<TValue>(PipeWriter writer, TValue value, JsonTypeInfo<TValue> jsonTypeInfo, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.SerializeAsync(writer, value, jsonTypeInfo, cancellationToken);
@@ -129,7 +130,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public Task SerializeAsync(PipeWriter writer, object? value, Type inputType, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.SerializeAsync(writer, value, inputType, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.SerializeAsync(writer, value, inputType, options ?? Options, cancellationToken);
 	}
 	public Task SerializeAsync(PipeWriter writer, object? value, JsonTypeInfo jsonTypeInfo, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.SerializeAsync(writer, value, jsonTypeInfo, cancellationToken);
@@ -143,7 +144,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public byte[] SerializeToUtf8Bytes<TValue>(TValue value, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, options ?? Options);
 	}
 	public byte[] SerializeToUtf8Bytes<TValue>(TValue value, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, jsonTypeInfo);
@@ -151,7 +152,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public byte[] SerializeToUtf8Bytes(object? value, Type inputType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, inputType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, inputType, options ?? Options);
 	}
 	public byte[] SerializeToUtf8Bytes(object? value, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, jsonTypeInfo);
@@ -165,7 +166,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public JsonElement SerializeToElement<TValue>(TValue value, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.SerializeToElement(value, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.SerializeToElement(value, options ?? Options);
 	}
 	public JsonElement SerializeToElement<TValue>(TValue value, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.SerializeToElement(value, jsonTypeInfo);
@@ -173,7 +174,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public JsonElement SerializeToElement(object? value, Type inputType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.SerializeToElement(value, inputType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.SerializeToElement(value, inputType, options ?? Options);
 	}
 	public JsonElement SerializeToElement(object? value, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.SerializeToElement(value, jsonTypeInfo);
@@ -187,7 +188,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public JsonNode? SerializeToNode<TValue>(TValue value, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.SerializeToNode(value, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.SerializeToNode(value, options ?? Options);
 	}
 	public JsonNode? SerializeToNode<TValue>(TValue value, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.SerializeToNode(value, jsonTypeInfo);
@@ -195,7 +196,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public JsonNode? SerializeToNode(object? value, Type inputType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.SerializeToNode(value, inputType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.SerializeToNode(value, inputType, options ?? Options);
 	}
 	public JsonNode? SerializeToNode(object? value, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.SerializeToNode(value, jsonTypeInfo);
@@ -209,7 +210,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public JsonDocument SerializeToDocument<TValue>(TValue value, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.SerializeToDocument(value, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.SerializeToDocument(value, options ?? Options);
 	}
 	public JsonDocument SerializeToDocument<TValue>(TValue value, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.SerializeToDocument(value, jsonTypeInfo);
@@ -217,7 +218,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public JsonDocument SerializeToDocument(object? value, Type inputType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.SerializeToDocument(value, inputType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.SerializeToDocument(value, inputType, options ?? Options);
 	}
 	public JsonDocument SerializeToDocument(object? value, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.SerializeToDocument(value, jsonTypeInfo);
@@ -231,7 +232,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public TValue? Deserialize<TValue>(string json, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize<TValue>(json, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize<TValue>(json, options ?? Options);
 	}
 	public TValue? Deserialize<TValue>(string json, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize<TValue>(json, jsonTypeInfo);
@@ -239,7 +240,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public object? Deserialize(string json, Type returnType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize(json, returnType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize(json, returnType, options ?? Options);
 	}
 	public object? Deserialize(string json, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize(json, jsonTypeInfo);
@@ -251,7 +252,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public TValue? Deserialize<TValue>(ReadOnlySpan<byte> utf8Json, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize<TValue>(utf8Json, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize<TValue>(utf8Json, options ?? Options);
 	}
 	public TValue? Deserialize<TValue>(ReadOnlySpan<byte> utf8Json, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize<TValue>(utf8Json, jsonTypeInfo);
@@ -259,7 +260,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public object? Deserialize(ReadOnlySpan<byte> utf8Json, Type returnType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize(utf8Json, returnType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize(utf8Json, returnType, options ?? Options);
 	}
 	public object? Deserialize(ReadOnlySpan<byte> utf8Json, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize(utf8Json, jsonTypeInfo);
@@ -271,7 +272,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public TValue? Deserialize<TValue>(ReadOnlySpan<char> json, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize<TValue>(json, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize<TValue>(json, options ?? Options);
 	}
 	public TValue? Deserialize<TValue>(ReadOnlySpan<char> json, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize<TValue>(json, jsonTypeInfo);
@@ -279,7 +280,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public object? Deserialize(ReadOnlySpan<char> json, Type returnType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize(json, returnType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize(json, returnType, options ?? Options);
 	}
 	public object? Deserialize(ReadOnlySpan<char> json, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize(json, jsonTypeInfo);
@@ -291,7 +292,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public TValue? Deserialize<TValue>(Stream utf8Json, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize<TValue>(utf8Json, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize<TValue>(utf8Json, options ?? Options);
 	}
 	public TValue? Deserialize<TValue>(Stream utf8Json, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize<TValue>(utf8Json, jsonTypeInfo);
@@ -299,7 +300,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public object? Deserialize(Stream utf8Json, Type returnType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize(utf8Json, returnType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize(utf8Json, returnType, options ?? Options);
 	}
 	public object? Deserialize(Stream utf8Json, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize(utf8Json, jsonTypeInfo);
@@ -311,7 +312,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public TValue? Deserialize<TValue>(JsonDocument document, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize<TValue>(document, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize<TValue>(document, options ?? Options);
 	}
 	public TValue? Deserialize<TValue>(JsonDocument document, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize<TValue>(document, jsonTypeInfo);
@@ -319,7 +320,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public object? Deserialize(JsonDocument document, Type returnType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize(document, returnType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize(document, returnType, options ?? Options);
 	}
 	public object? Deserialize(JsonDocument document, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize(document, jsonTypeInfo);
@@ -331,7 +332,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public TValue? Deserialize<TValue>(JsonElement element, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize<TValue>(element, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize<TValue>(element, options ?? Options);
 	}
 	public TValue? Deserialize<TValue>(JsonElement element, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize<TValue>(element, jsonTypeInfo);
@@ -339,7 +340,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public object? Deserialize(JsonElement element, Type returnType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize(element, returnType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize(element, returnType, options ?? Options);
 	}
 	public object? Deserialize(JsonElement element, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize(element, jsonTypeInfo);
@@ -351,7 +352,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public TValue? Deserialize<TValue>(JsonNode? node, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize<TValue>(node, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize<TValue>(node, options ?? Options);
 	}
 	public TValue? Deserialize<TValue>(JsonNode? node, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize<TValue>(node, jsonTypeInfo);
@@ -359,7 +360,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public object? Deserialize(JsonNode? node, Type returnType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize(node, returnType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize(node, returnType, options ?? Options);
 	}
 	public object? Deserialize(JsonNode? node, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize(node, jsonTypeInfo);
@@ -371,7 +372,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public TValue? Deserialize<TValue>(ref Utf8JsonReader reader, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize<TValue>(ref reader, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize<TValue>(ref reader, options ?? Options);
 	}
 	public TValue? Deserialize<TValue>(ref Utf8JsonReader reader, JsonTypeInfo<TValue> jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize<TValue>(ref reader, jsonTypeInfo);
@@ -379,7 +380,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public object? Deserialize(ref Utf8JsonReader reader, Type returnType, JsonSerializerOptions? options = null){
-		return System.Text.Json.JsonSerializer.Deserialize(ref reader, returnType, options ?? DfltOptions);
+		return System.Text.Json.JsonSerializer.Deserialize(ref reader, returnType, options ?? Options);
 	}
 	public object? Deserialize(ref Utf8JsonReader reader, JsonTypeInfo jsonTypeInfo){
 		return System.Text.Json.JsonSerializer.Deserialize(ref reader, jsonTypeInfo);
@@ -393,7 +394,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public ValueTask<TValue?> DeserializeAsync<TValue>(Stream utf8Json, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.DeserializeAsync<TValue>(utf8Json, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.DeserializeAsync<TValue>(utf8Json, options ?? Options, cancellationToken);
 	}
 	public ValueTask<TValue?> DeserializeAsync<TValue>(Stream utf8Json, JsonTypeInfo<TValue> jsonTypeInfo, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.DeserializeAsync<TValue>(utf8Json, jsonTypeInfo, cancellationToken);
@@ -401,7 +402,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public ValueTask<object?> DeserializeAsync(Stream utf8Json, Type returnType, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.DeserializeAsync(utf8Json, returnType, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.DeserializeAsync(utf8Json, returnType, options ?? Options, cancellationToken);
 	}
 	public ValueTask<object?> DeserializeAsync(Stream utf8Json, Type returnType, JsonSerializerContext context, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.DeserializeAsync(utf8Json, returnType, context, cancellationToken);
@@ -413,7 +414,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public ValueTask<TValue?> DeserializeAsync<TValue>(PipeReader reader, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.DeserializeAsync<TValue>(reader, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.DeserializeAsync<TValue>(reader, options ?? Options, cancellationToken);
 	}
 	public ValueTask<TValue?> DeserializeAsync<TValue>(PipeReader reader, JsonTypeInfo<TValue> jsonTypeInfo, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.DeserializeAsync<TValue>(reader, jsonTypeInfo, cancellationToken);
@@ -421,7 +422,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public ValueTask<object?> DeserializeAsync(PipeReader reader, Type returnType, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.DeserializeAsync(reader, returnType, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.DeserializeAsync(reader, returnType, options ?? Options, cancellationToken);
 	}
 	public ValueTask<object?> DeserializeAsync(PipeReader reader, Type returnType, JsonSerializerContext context, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.DeserializeAsync(reader, returnType, context, cancellationToken);
@@ -435,7 +436,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public IAsyncEnumerable<TValue?> DeserializeAsyncEnumerable<TValue>(Stream utf8Json, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(utf8Json, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(utf8Json, options ?? Options, cancellationToken);
 	}
 	public IAsyncEnumerable<TValue?> DeserializeAsyncEnumerable<TValue>(Stream utf8Json, JsonTypeInfo<TValue> jsonTypeInfo, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(utf8Json, jsonTypeInfo, cancellationToken);
@@ -446,13 +447,13 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public IAsyncEnumerable<TValue?> DeserializeAsyncEnumerable<TValue>(Stream utf8Json, bool topLevelValues, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(utf8Json, topLevelValues, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(utf8Json, topLevelValues, options ?? Options, cancellationToken);
 	}
 
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public IAsyncEnumerable<TValue?> DeserializeAsyncEnumerable<TValue>(PipeReader reader, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(reader, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(reader, options ?? Options, cancellationToken);
 	}
 	public IAsyncEnumerable<TValue?> DeserializeAsyncEnumerable<TValue>(PipeReader reader, JsonTypeInfo<TValue> jsonTypeInfo, CancellationToken cancellationToken = default){
 		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(reader, jsonTypeInfo, cancellationToken);
@@ -463,7 +464,7 @@ public class JsonSerializer : IJsonSerializer{
 	[RequiresUnreferencedCode(JsonAotMsg.Unreferenced)]
 	[RequiresDynamicCode(JsonAotMsg.DynamicCode)]
 	public IAsyncEnumerable<TValue?> DeserializeAsyncEnumerable<TValue>(PipeReader reader, bool topLevelValues, JsonSerializerOptions? options = null, CancellationToken cancellationToken = default){
-		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(reader, topLevelValues, options ?? DfltOptions, cancellationToken);
+		return System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(reader, topLevelValues, options ?? Options, cancellationToken);
 	}
 }
 
