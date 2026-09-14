@@ -1,25 +1,41 @@
 //Decl:JsonNodeList 的聲明。實現見 JsonNodeList.Impl.cs
 using System.Text.Json.Nodes;
+using Tsinswreng.CsCore;
 
 namespace Tsinswreng.CsJson;
 
-/// 把 JsonArray 適配成 IList&lt;obj?&gt; 的視圖(零拷貝)。
-/// 讀索引時「懶適配」:命中內部緩存(與底層數組對齊的槽位)直接返回同一實例;
-/// 未命中才適配後寫入緩存再返回。同一實例保證調用方對它 Add/改索引/嵌套 dict[k]=v
-/// 的修改能作用到底層樹並被下次讀到。
-public partial class JsonNodeList : IList<obj?>{
-	// 字段、訪問器、屬性寫在 Decl。
-	private readonly JsonArray _arr;
-	// 緩存槽位,與 _arr 保持同長對齊:已適配的索引存實例,未適配的存 null(重複適配 null 無害)。
-	private readonly List<obj?> _cached = new();
+[Doc(@$"
+統一 {nameof(IList<obj?>)} 門面(底層 JsonArray,讀多寫少場景)。
 
-	/// 底層 JsonArray 樹(可變,視圖改它即改樹)。
-	public JsonArray Arr{
-		get => _arr;
-	}
+內部維持兩份數據:
+- {nameof(Src)}:來源數組,構造時給入,僅在「對應索引尚未被寫過」時作為初始數據來源;
+- {nameof(Adapted)}:真相列表,存放「讀過或寫過」的槽位(與索引一一對應)。
+
+行為契約:
+- 讀:{nameof(Adapted)} 該索引已適配 → 返回同一實例;未適配且索引在 {nameof(Src)} 範圍內 →
+  適配 {nameof(Src)} 節點:標量直接返回、不入 {nameof(Adapted)};容器(JsonNodeDict/JsonNodeList)
+  入 {nameof(Adapted)} 後返回。保證「取出容器、原地修改、下次讀到同一實例看到修改」。
+- 寫(索引 set / Add / Insert / RemoveAt):只動 {nameof(Adapted)},不碰 {nameof(Src)}——允許放入
+  任意 obj?(含業務對象)。結構修改後 {nameof(Adapted)} 與 {nameof(Src)} 不再對齊,{nameof(Src)} 退役,
+  後續讀/序列化全以 {nameof(Adapted)} 為準。
+- Clear:{nameof(Adapted)} 清空;{nameof(Src)} 一併作廢。
+
+序列化:本類不自帶序列化器;要 JsonNode 時,未 {nameof(Dirty)} 可 O(1) 交 {nameof(Src)}。
+公共面只暴露 IList 語義;內部細節全部 internal/private,換內部實現不影響調用方。
+")]
+public partial class JsonNodeList : IJsonNodeList{
+	// 字段、訪問器、屬性寫在 Decl。
+	[Doc("來源數組(僅初始數據來源)。")]
+	internal readonly JsonArray Src;
+	[Doc("真相:已讀/已寫的槽位,與索引一一對應。")]
+	private readonly List<obj?> Adapted = new();
+	[Doc("是否被寫過:寫即置位(索引 set/Add/Insert/RemoveAt/Clear)。")]
+	internal bool Dirty;
 
 	// ---- 構造函數(實現見 Impl)----
+	[Doc(@$"空列表:{nameof(Src)} 為空數組。")]
 	public partial JsonNodeList();
+	[Doc(@$"包裝給定數組:{nameof(Adapted)} 預填與 arr.Count 等長的 null 槽位(未適配標記),使 {nameof(Count)} 立即反映數組長度;槽位在首次讀時才適配。")]
 	public partial JsonNodeList(JsonArray arr);
 
 	// ---- IList<obj?> ----
@@ -28,39 +44,28 @@ public partial class JsonNodeList : IList<obj?>{
 		set => SetAt(Index, value);
 	}
 
-	public int Count => _arr.Count;
+	[Doc(@$"元素數:以真相 {nameof(Adapted)} 為準(索引對齊,與 {nameof(Src)} 無關)。")]
+	public int Count => Adapted.Count;
 
 	public bool IsReadOnly => false;
 
-	/// 追加:適配寫入底層數組,並把原值記入緩存(追加位置即新索引)。
 	public partial void Add(obj? Item);
-
-	/// 清空:底層數組與緩存一併清空。
+	[Doc(@$"清空:{nameof(Adapted)} 清空;{nameof(Src)} 一併作廢,置 {nameof(Dirty)}。")]
 	public partial void Clear();
-
 	public partial bool Contains(obj? Item);
-
 	public partial void CopyTo(obj?[] Array, int ArrayIndex);
-
-	/// 枚舉:逐索引走懶適配緩存。
 	public partial IEnumerator<obj?> GetEnumerator();
 	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		=> GetEnumerator();
-
 	public partial int IndexOf(obj? Item);
-
-	/// 插入:底層數組與緩存槽位同步插入(緩存槽位插 null 表示未適配)。
 	public partial void Insert(int Index, obj? Item);
-
 	public partial bool Remove(obj? Item);
-
-	/// 移除:底層數組與緩存槽位同步移除。
 	public partial void RemoveAt(int Index);
 
 	// ---- 內部(實現見 Impl)----
-	/// 讀索引:緩存命中返回同一實例;未命中適配後寫入緩存再返回。
+	[Doc(@$"讀索引:{nameof(Adapted)} 已適配 → 返回同一實例;未適配且索引在 {nameof(Src)} 範圍內 → 適配 {nameof(Src)},標量直接返回、容器入 {nameof(Adapted)} 後返回;超出 {nameof(Src)} → 只從 {nameof(Adapted)} 讀。")]
 	private partial obj? GetCached(int Index);
 
-	/// 寫索引:同步寫底層數組與緩存。
+	[Doc(@$"寫索引:{nameof(Adapted)} 同步該槽位並置 {nameof(Dirty)};不碰 {nameof(Src)}。允許任意 obj?(含業務對象)。")]
 	private partial void SetAt(int Index, obj? Value);
 }

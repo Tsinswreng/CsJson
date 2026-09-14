@@ -1,37 +1,40 @@
 //Decl:JsonNodeDict 的聲明。實現見 JsonNodeDict.Impl.cs
 using System.Text.Json.Nodes;
-using System.Text.Json;
+using Tsinswreng.CsCore;
 
 namespace Tsinswreng.CsJson;
 
-/// 把 JsonObject 適配成 IDictionary&lt;str,obj?&gt; 的視圖(零拷貝)。
-/// 讀鍵時「懶適配」:命中內部緩存直接返回同一實例;未命中才把 JsonNode 適配成
-/// IDict/List/標量,寫入緩存後再返回。返回的必須是同一實例,調用方對它做的
-/// 修改(dict[k].Add(...) / list.Add(...))才能作用到底層樹並被下次讀到。
-///
-/// 【賦值語義】通過本視圖的索引器/Add 寫入的值會被拷貝進底層樹(ToNode 遞歸重建),
-/// 不是「引用同一棵樹」。因此不要這樣用:
-/// dict.Obj["child"]... 見下方——
-///   outer["child"] = src;   // 拷貝了一份 {a:1} 進 outer 的樹
-///   src["a"] = 999;         // 改的是 src 原樹,outer 裏那份拷貝不受影響 ❌
-/// 想要修改生效,正確做法是寫入後「從樹裏讀回同一實例」再改:
-///   outer["child"] = src;
-///   src = (JsonNodeDict)outer["child"]!;  // 從緩存拿回同一實例
-///   src["a"] = 999;                       // 改的是樹裏那份,生效 ✅
-/// 若確要共享同一棵樹,直接傳節點本人:outer.Obj["child"] = src.Obj;
-public partial class JsonNodeDict : IDictionary<str, obj?>{
-	// 字段、訪問器、屬性寫在 Decl。
-	private readonly JsonObject _obj;
-	private readonly Dictionary<str, obj?> _cached = new();
+[Doc(@$"
+統一 {nameof(IDictionary<str, obj?>)} 門面(底層 JsonObject,讀多寫少場景)。
 
-	/// 底層 JsonObject 樹(可變,視圖改它即改樹)。
-	/// 賦值/共享的注意事項見本類頂部【賦值語義】。
-	public JsonObject Obj{
-		get => _obj;
-	}
+內部維持兩份數據:
+- {nameof(Src)}:來源樹,構造時給入,寫操作不碰它;
+- {nameof(Adapted)}:真相字典,存放「讀過或寫過」的鍵值。
+
+行為契約:
+- 讀:{nameof(Adapted)} 命中返回同一實例;未命中才適配 {nameof(Src)} 節點——
+  標量適配後直接返回、不入 {nameof(Adapted)};容器(JsonNodeDict/JsonNodeList)
+  入 {nameof(Adapted)} 後返回。保證「取出容器、原地修改、下次讀到同一實例看到修改」。
+- 寫(索引器/Add):只寫 {nameof(Adapted)},置 {nameof(Dirty)},不碰樹——允許放入
+  任意 obj?(含業務對象);序列化規則由序列化層統一處理。
+- Remove/Clear:{nameof(Src)} 與 {nameof(Adapted)} 雙刪/雙清,置 {nameof(Dirty)}。
+- Keys/Values/Count/枚舉:{nameof(Src)}∪{nameof(Adapted)},鍵在 {nameof(Adapted)} 優先。
+
+序列化:本類不自帶序列化器;要 JsonNode 時,未 {nameof(Dirty)} 可 O(1) 交 {nameof(Src)}。
+公共面只暴露 IDictionary 語義;內部細節全部 internal/private,換內部實現不影響調用方。
+")]
+public partial class JsonNodeDict : IJsonNodeDict{
+	// 字段、訪問器、屬性寫在 Decl。
+	[Doc("來源樹(寫操作不碰它)。")]
+	internal readonly JsonObject Src;
+	[Doc("真相:讀過/寫過的鍵值。")]
+	private readonly Dictionary<str, obj?> Adapted = new();
+	[Doc("是否被寫過:寫即置位(索引器/Add/Remove/Clear)。")]
+	internal bool Dirty;
 
 	// ---- 構造函數(實現見 Impl)----
 	public partial JsonNodeDict();
+	[Doc(@$"包裝給定樹:{nameof(Src)} 即該樹,寫操作不碰它。")]
 	public partial JsonNodeDict(JsonObject obj);
 
 	// ---- IDictionary<str,obj?> ----
@@ -40,35 +43,59 @@ public partial class JsonNodeDict : IDictionary<str, obj?>{
 		set => SetCached(Key, value);
 	}
 
+	[Doc(@$"鍵集合:{nameof(Src)}∪{nameof(Adapted)},先樹序(僅當沒有被讀/寫過的新鍵時)。")]
 	public ICollection<str> Keys{
 		get{
-			var ans = new List<str>(_obj.Count);
-			foreach(var kv in _obj){
-				ans.Add(kv.Key);
+			var ans = new List<str>(Count);
+			var seen = new HashSet<str>();
+			foreach(var kv in Src){
+				if(seen.Add(kv.Key)){
+					ans.Add(kv.Key);
+				}
+			}
+			foreach(var key in Adapted.Keys){
+				if(seen.Add(key)){
+					ans.Add(key);
+				}
 			}
 			return ans;
 		}
 	}
 
+	[Doc(@$"值集合:與 {nameof(Keys)} 同序,鍵在 {nameof(Adapted)} 用其值,否則適配 {nameof(Src)}。")]
 	public ICollection<obj?> Values{
 		get{
-			var ans = new List<obj?>(_obj.Count);
-			foreach(var kv in _obj){
-				ans.Add(GetCached(kv.Key));
+			var ans = new List<obj?>(Count);
+			foreach(var key in Keys){
+				ans.Add(GetCached(key));
 			}
 			return ans;
 		}
 	}
 
-	public int Count => _obj.Count;
+	[Doc(@$"鍵數:{nameof(Src)}∪{nameof(Adapted)} 的數量。")]
+	public int Count{
+		get{
+			var seen = new HashSet<str>(Src.Count + Adapted.Count);
+			foreach(var kv in Src){
+				seen.Add(kv.Key);
+			}
+			foreach(var key in Adapted.Keys){
+				seen.Add(key);
+			}
+			return seen.Count;
+		}
+	}
 
 	public bool IsReadOnly => false;
 
 	public partial void Add(str Key, obj? Value);
 	public partial bool ContainsKey(str Key);
+	[Doc(@$"移除:雙刪 {nameof(Src)} 與 {nameof(Adapted)},置 {nameof(Dirty)}。")]
 	public partial bool Remove(str Key);
 	public partial bool TryGetValue(str Key, out obj? Value);
 	public partial void Add(KeyValuePair<str, obj?> Item);
+	[Doc(@$"清空:雙清 {nameof(Src)} 與 {nameof(Adapted)},置 {nameof(Dirty)}。")]
 	public partial void Clear();
 	public partial bool Contains(KeyValuePair<str, obj?> Item);
 	public partial void CopyTo(KeyValuePair<str, obj?>[] Array, int ArrayIndex);
@@ -78,22 +105,15 @@ public partial class JsonNodeDict : IDictionary<str, obj?>{
 		=> GetEnumerator();
 
 	// ---- 內部(實現見 Impl)----
-	/// 讀鍵:緩存命中返回同一實例;未命中適配後寫入緩存再返回。
+	[Doc(@$"讀鍵:{nameof(Adapted)} 命中返回同一實例;未命中適配 {nameof(Src)},標量直接返回,容器寫入 {nameof(Adapted)} 後返回。")]
 	private partial obj? GetCached(str Key);
 
-	/// 寫鍵:同步寫底層樹,並使該鍵緩存失效(下次讀再懶適配)。
+	[Doc(@$"寫鍵:只寫 {nameof(Adapted)}、置 {nameof(Dirty)};不碰 {nameof(Src)}。允許任意 obj?(含業務對象)。")]
 	private partial void SetCached(str Key, obj? Value);
 
-	/// 適配單個 JsonNode 為 obj?:
-	/// JsonObject → 新 JsonNodeDict;JsonArray → 新 JsonNodeList;
-	/// JsonValue → 標量;null → null。數字規則:i64 優先,不行 f64,再不行字符串。
-	public static partial obj? Adapt(JsonNode? Node);
+	[Doc(@$"適配單個 JsonNode 為 obj?:JsonObject → 新 JsonNodeDict;JsonArray → 新 JsonNodeList;JsonValue → 標量;null → null。數字規則:i64 優先,不行 f64,再不行字符串。")]
+	internal static partial obj? Adapt(JsonNode? Node);
 
-	/// 反序列化方向:obj? → JsonNode。
-	/// 支持:null/標量/JsonNode/IDictionary&lt;str,obj?&gt;/IEnumerable。
-	/// 手寫遞歸,不依賴 JsonSerializer 反射,AOT 安全。
-	/// 未知類型(非 JSON 值)拋 NotSupportedException;業務對象請先序列化成 JsonNode 再放入。
-	public static partial JsonNode? ToNode(obj? Value);
-
-	public static partial bool AreEqual(obj? Left, obj? Right);
+	[Doc("值相等:引用相同/值相等/兩個 JsonNode 按序列化文本比較。")]
+	internal static partial bool AreEqual(obj? Left, obj? Right);
 }
