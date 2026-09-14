@@ -18,12 +18,16 @@ using System.Text.Json.Serialization.Metadata;
 /// 這是讓「DI 進來直接能用、調用方不用每次傳配置」成爲可能的那一點：
 /// 應用層注入一份配好的全局 options（如掛 AppJsonCtx.Default 源生成 resolver），
 /// 業務代碼就可以直接 Serialize(obj) / Deserialize&lt;T&gt;(json)，不傳任何配置。
-public class DfltJsonSerializer : IJsonSerializer{
+public class JsonSerializer : IJsonSerializer{
+	
+	public static JsonSerializer Inst{get;set;} = new();
+	
 	/// 構造注入的默認 options；爲 null 時所有重載退回官方默認行爲（JsonSerializerOptions.Default）。
-	private readonly JsonSerializerOptions? DfltOptions;
+	[Impl]
+	public JsonSerializerOptions? Options{get;set;}
 
-	public DfltJsonSerializer(JsonSerializerOptions? DfltOptions = null){
-		this.DfltOptions = DfltOptions;
+	public JsonSerializer(JsonSerializerOptions? Options = null){
+		this.Options = Options;
 	}
 
 	// ===== Serialize：object → JSON 字符串 =====

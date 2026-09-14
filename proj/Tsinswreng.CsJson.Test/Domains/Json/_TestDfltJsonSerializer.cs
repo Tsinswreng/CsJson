@@ -11,7 +11,7 @@ public partial class TestDfltJsonSerializer:ITester{
 	private readonly IJsonSerializer InjectSerializer;
 
 	public TestDfltJsonSerializer(){
-		InjectSerializer = new DfltJsonSerializer(new JsonSerializerOptions{
+		InjectSerializer = new JsonSerializer(new JsonSerializerOptions{
 			TypeInfoResolver = JsonSampleCtx.Default,
 			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 		});

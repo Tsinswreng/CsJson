@@ -45,7 +45,7 @@ public partial class TestDfltJsonSerializer{
 
 		R("Serialize_NoInject_Throws_Under_AotReflectionDisabled", async(o)=>{
 			// 不注入 options 的實例：AOT 反射禁用下必須拋異常，不能靜默走反射路徑。
-			var noInject = new DfltJsonSerializer();
+			var noInject = new JsonSerializer();
 			var s = new JsonSample{Name = "hello world", Age = 42};
 			try{
 				noInject.Serialize(s);
