@@ -8,5 +8,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Include="../TypeAlias.cs" />
+		<!-- [Doc] 屬性來自 CsCore(離線包,本機 nuget 緩存) -->
+		<PackageReference Include="Tsinswreng.CsCore" Version="0.0.1-alpha" />
 	</ItemGroup>
 </Project>

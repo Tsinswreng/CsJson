@@ -1,39 +1,42 @@
 //Impl:JsonNodeDict 的實現。聲明見 JsonNodeDict.cs
-using System.Collections;
 using System.Text.Json.Nodes;
-using System.Text.Json;
 
 namespace Tsinswreng.CsJson;
 
 public partial class JsonNodeDict{
 	// ---- 構造函數 ----
 	public partial JsonNodeDict(){
-		_obj = [];
+		Src = [];
 	}
 
 	public partial JsonNodeDict(JsonObject obj){
 		ArgumentNullException.ThrowIfNull(obj);
-		_obj = obj;
+		Src = obj;
 	}
 
 	// ---- IDictionary<str,obj?> ----
 	public partial void Add(str Key, obj? Value){
-		var node = ToNode(Value);
-		_obj.Add(Key, node);
-		_cached[Key] = Adapt(node); // 緩存適配實例:讀回同一視圖,修改生效
+		if(ContainsKey(Key)){
+			throw new ArgumentException($"Key already exists: {Key}", nameof(Key));
+		}
+		Adapted[Key] = Value;
+		Dirty = true;
 	}
 
-	public partial bool ContainsKey(str Key){
-		return _obj.ContainsKey(Key);
-	}
+	public partial bool ContainsKey(str Key)
+		=> Src.ContainsKey(Key) || Adapted.ContainsKey(Key);
 
 	public partial bool Remove(str Key){
-		_cached.Remove(Key);
-		return _obj.Remove(Key);
+		var removed = Adapted.Remove(Key);
+		removed |= Src.Remove(Key);
+		if(removed){
+			Dirty = true;
+		}
+		return removed;
 	}
 
 	public partial bool TryGetValue(str Key, out obj? Value){
-		if(!_obj.TryGetPropertyValue(Key, out _)){
+		if(!ContainsKey(Key)){
 			Value = null;
 			return false;
 		}
@@ -45,15 +48,16 @@ public partial class JsonNodeDict{
 		=> Add(Item.Key, Item.Value);
 
 	public partial void Clear(){
-		_obj.Clear();
-		_cached.Clear();
+		Src.Clear();
+		Adapted.Clear();
+		Dirty = true;
 	}
 
 	public partial bool Contains(KeyValuePair<str, obj?> Item){
 		if(!TryGetValue(Item.Key, out var value)){
 			return false;
 		}
-		return AreEqual(value, Item.Value);
+		return EqualityComparer<obj?>.Default.Equals(value, Item.Value);
 	}
 
 	public partial void CopyTo(KeyValuePair<str, obj?>[] Array, int ArrayIndex){
@@ -77,30 +81,34 @@ public partial class JsonNodeDict{
 	}
 
 	public partial IEnumerator<KeyValuePair<str, obj?>> GetEnumerator(){
-		foreach(var kv in _obj){
-			yield return new KeyValuePair<str, obj?>(kv.Key, GetCached(kv.Key));
+		// 並集枚舉:鍵序與 Keys 一致,值一律經真相(Adapted 命中或懶適配)。
+		foreach(var key in Keys){
+			yield return new KeyValuePair<str, obj?>(key, GetCached(key));
 		}
 	}
 
 	// ---- 內部 ----
 	private partial obj? GetCached(str Key){
-		if(_cached.TryGetValue(Key, out var hit)){
+		if(Adapted.TryGetValue(Key, out var hit)){
 			return hit;
 		}
-		if(!_obj.TryGetPropertyValue(Key, out var node)){
+		if(!Src.TryGetPropertyValue(Key, out var node)){
 			throw new KeyNotFoundException($"Key not found: {Key}");
 		}
 		var adapted = Adapt(node);
-		_cached[Key] = adapted;
+		if(adapted is JsonNodeDict or JsonNodeList){
+			// 容器才緩存同一實例;標量直接返回,不入真相(重適配零成本)。
+			Adapted[Key] = adapted;
+		}
 		return adapted;
 	}
 
 	private partial void SetCached(str Key, obj? Value){
-		_obj[Key] = ToNode(Value);
-		_cached.Remove(Key); // 使該鍵緩存失效:下次讀重新懶適配,保證與樹一致
+		Adapted[Key] = Value;
+		Dirty = true;
 	}
 
-	public static partial obj? Adapt(JsonNode? Node){
+	internal static partial obj? Adapt(JsonNode? Node){
 		if(Node is null){
 			return null;
 		}
@@ -126,69 +134,5 @@ public partial class JsonNodeDict{
 			return value.ToJsonString(); // 兜底:不丟信息
 		}
 		throw new NotSupportedException($"Unsupported JsonNode kind: {Node.GetType().Name}");
-	}
-
-	public static partial JsonNode? ToNode(obj? Value){
-		switch(Value){
-			case null:
-				return null;
-			case JsonNode node:
-				return node;
-			case str s:
-				return JsonValue.Create(s);
-			case bool b:
-				return JsonValue.Create(b);
-			case i64 l:
-				return JsonValue.Create(l);
-			case u64 ul:
-				// 超過 i64 範圍的 u64 無法用 TryGetValue<i64> 讀回,統一轉 f64 存,保證 Adapt 數字鏈可命中。
-				if(ul <= i64.MaxValue){
-					return JsonValue.Create((i64)ul);
-				}
-				return JsonValue.Create((f64)ul);
-			case i32 i:
-				// 統一存 i64:Adapt 數字優先 i64,避免 i32 值 TryGetValue<i64> 落空掉到字符串兜底。
-				return JsonValue.Create((i64)i);
-			case f64 d:
-				return JsonValue.Create(d);
-			case f32 f:
-				return JsonValue.Create((f64)f);
-			case decimal dec:
-				return JsonValue.Create((f64)dec);
-			case IDictionary<str, obj?> dict:{
-				var objNode = new JsonObject();
-				foreach(var kv in dict){
-					objNode[kv.Key] = ToNode(kv.Value);
-				}
-				return objNode;
-			}
-			case IEnumerable enumrb:{
-				var arrNode = new JsonArray();
-				foreach(var item in enumrb){
-					arrNode.Add(ToNode(item));
-				}
-				return arrNode;
-			}
-			default:
-				throw new NotSupportedException(
-					$"Unsupported value type: {Value.GetType().FullName}. 僅支持 JSON 值 / JsonNode;業務對象請先序列化成 JsonNode 再放入。"
-				);
-		}
-	}
-
-	public static partial bool AreEqual(obj? Left, obj? Right){
-		if(ReferenceEquals(Left, Right)){
-			return true;
-		}
-		if(Left is null || Right is null){
-			return false;
-		}
-		if(Left.Equals(Right)){
-			return true;
-		}
-		if(Left is JsonNode leftNode && Right is JsonNode rightNode){
-			return leftNode.ToJsonString() == rightNode.ToJsonString();
-		}
-		return false;
 	}
 }

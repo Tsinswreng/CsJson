@@ -113,7 +113,4 @@ public partial class JsonNodeDict : IJsonNodeDict{
 
 	[Doc(@$"適配單個 JsonNode 為 obj?:JsonObject → 新 JsonNodeDict;JsonArray → 新 JsonNodeList;JsonValue → 標量;null → null。數字規則:i64 優先,不行 f64,再不行字符串。")]
 	internal static partial obj? Adapt(JsonNode? Node);
-
-	[Doc("值相等:引用相同/值相等/兩個 JsonNode 按序列化文本比較。")]
-	internal static partial bool AreEqual(obj? Left, obj? Right);
 }
