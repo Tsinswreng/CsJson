@@ -1,4 +1,5 @@
 //Decl:IJsonSerializerExtn 的聲明。實現見 IJsonSerializerExtn.Impl.cs
+using System.Text.Json;
 using Tsinswreng.CsCore;
 
 namespace Tsinswreng.CsJson;

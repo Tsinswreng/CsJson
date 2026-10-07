@@ -23,6 +23,7 @@ public partial class TestDfltJsonSerializer:ITester{
 		Node.IsParallelRecursive = false;
 		RegisterSerialize(Node);
 		RegisterDeserialize(Node);
+		RegisterDeserializeToDictList(Node);
 		return Node;
 	}
 }

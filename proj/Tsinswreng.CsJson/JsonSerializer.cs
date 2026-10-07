@@ -22,12 +22,15 @@ using Tsinswreng.CsCore;
 /// 業務代碼就可以直接 Serialize(obj) / Deserialize&lt;T&gt;(json)，不傳任何配置。
 public class JsonSerializer : IJsonSerializer{
 	
-	/// 默認單例:options 允許 JSON 註釋(Skip),供「jsonstr → DictJson」等通用解析場景使用;
+	/// 默認單例:options 允許 JSON 註釋(Skip)、原樣輸出、不轉命名,
+	/// 掛 JsonNodeCtx 源生成 resolver(反射禁用環境也可解析 JsonNode),
+	/// 供「jsonstr → DictJson」等通用解析場景使用;
 	/// 業務場景應注入自己配好的實例(如掛 AppJsonCtx.Default 源生成 resolver)。
 	public static JsonSerializer Inst{get;set;} = new(new JsonSerializerOptions{
 		ReadCommentHandling = JsonCommentHandling.Skip,
 		Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 允許原樣輸出
-		PropertyNamingPolicy = null  // 关闭命名策略
+		PropertyNamingPolicy = null,  // 关闭命名策略
+		TypeInfoResolver = JsonNodeCtx.Default,
 	});
 	
 	/// 構造注入的默認 options；爲 null 時所有重載退回官方默認行爲（JsonSerializerOptions.Default）。
